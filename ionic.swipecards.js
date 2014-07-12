@@ -175,7 +175,7 @@
     transitionOut: function() {
       var self = this;
 
-      if(this.y < 0) {
+      if(this.y < (window.innerHeight *.1)) {
         this.el.style[TRANSITION] = '-webkit-transform 0.2s ease-in-out';
         this.el.style[ionic.CSS.TRANSFORM] = 'translate3d(' + this.x + ',' + (this.startY) + 'px, 0)';
         setTimeout(function() {
