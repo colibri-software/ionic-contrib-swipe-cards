@@ -72,7 +72,7 @@
     popCard: function(animate) {
       var card = this.cards.pop();
       if(animate) {
-        card.swipe();
+        card.forceSwipe();
       }
       return card;
     }
@@ -168,6 +168,11 @@
     swipe: function() {
       this.transitionOut();
     },
+    
+    forceSwipe: function() {
+      this.y = window.innerHeight/2;
+      this.transitionOut();
+    },
 
     /**
      * Fly the card out or animate back into resting position.
@@ -230,8 +235,28 @@
       this.el.style[TRANSFORM_ORIGIN] = 'right center';
       this.rotationDirection = -1;
     },
+    
+    
+    _checkEventForDisabled: function(element) {
+      while(element != this.el) {
+        for(var i=0; i < element.classList.length; i++)
+          if(element.classList[i] =="disable-swipe") {
+            //console.log("dragging on disable-swipe")
+            return true; 
+          }  
+        element = element.parentElement; 
+      }
+      return false;
+    },
 
     _doDragStart: function(e) {
+      if(this._checkEventForDisabled(e.srcElement)) {
+        e.bubbles = false;
+        return;
+      }
+      
+      
+      this.isDragging = true;
       var width = this.el.offsetWidth;
       var point = window.innerWidth / 2 + this.rotationDirection * (width / 2)
       var distance = Math.abs(point - e.gesture.touches[0].pageX);// - window.innerWidth/2);
@@ -243,6 +268,11 @@
     },
 
     _doDrag: function(e) {
+      if(!this.isDragging) {
+        e.bubbles = false;
+        return;
+      }
+      
       var o = e.gesture.deltaY / 3;
 
       this.rotationAngle = Math.atan(o/this.touchDistance) * this.rotationDirection;
@@ -256,6 +286,9 @@
       this.el.style[ionic.CSS.TRANSFORM] = 'translate3d(' + this.x + 'px, ' + this.y  + 'px, 0) rotate(' + (this.rotationAngle || 0) + 'rad)';
     },
     _doDragEnd: function(e) {
+      e.bubbles = false;
+      
+      this.isDragging = false;
       this.transitionOut(e);
     }
   });
